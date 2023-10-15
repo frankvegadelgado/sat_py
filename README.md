@@ -1,7 +1,7 @@
 # SAT PY
-SAT
+3SAT
 ----- 
-Instance: A Boolean formula $\phi$ in CNF.
+Instance: A Boolean formula $\phi$ in 3CNF.
 
 Question: Is $\phi$ satisfiable?
  
@@ -11,9 +11,9 @@ Question: Is $\phi$ satisfiable?
 
 # Theory
 
-- A literal in a Boolean formula is an occurrence of a variable or its negation. A Boolean formula is in conjunctive normal form, or CNF, if it is expressed as an AND of clauses, each of which is the OR of one or more literals.
+- A literal in a Boolean formula is an occurrence of a variable or its negation. A Boolean formula is in conjunctive normal form, or CNF, if it is expressed as an AND of clauses, each of which is the OR of one or more literals. A Boolean formula is in 3-conjunctive normal form or 3CNF, if each clause has exactly three distinct literals.
 
-- A truth assignment for a Boolean formula $\phi$ is a set of values for the variables in $\phi$. A satisfying truth assignment is a truth assignment that causes $\phi$ to be evaluated as true. A Boolean formula with a satisfying truth assignment is satisfiable. The problem SAT asks whether a given Boolean formula $\phi$ in CNF is satisfiable.
+- A truth assignment for a Boolean formula $\phi$ is a set of values for the variables in $\phi$. A satisfying truth assignment is a truth assignment that causes $\phi$ to be evaluated as true. A Boolean formula with a satisfying truth assignment is satisfiable. The problem 3SAT asks whether a given Boolean formula $\phi$ in 3CNF is satisfiable.
 
 Example
 ----- 
@@ -81,7 +81,7 @@ s SATISFIABLE
 v 1 2 3 4 0
 ```
 
-# **SAT Benchmarks** 
+# **3SAT Benchmarks** 
 
 We can run the DIMACS files with the extension .cnf in the simplest benchmarks folder:
 
@@ -107,7 +107,7 @@ aim-50-1_6-yes1-1.cnf
 aim-50-1_6-no-1.cnf
 ```
 
-from this well-known dataset [SAT Benchmarks](https://www.cs.ubc.ca/~hoos/SATLIB/Benchmarks/SAT/DIMACS/AIM/descr.html). 
+from this well-known dataset [3SAT Benchmarks](https://www.cs.ubc.ca/~hoos/SATLIB/Benchmarks/SAT/DIMACS/AIM/descr.html). 
 
 # Code
 
@@ -116,7 +116,7 @@ from this well-known dataset [SAT Benchmarks](https://www.cs.ubc.ca/~hoos/SATLIB
 # Complexity
 
 ````diff
-+ We reduce SAT to a Linear System of Constraints in linear time.
++ We reduce 3SAT to a Linear System of Constraints in linear time.
 + The linear optimization with real variables can be solved in polynomial time.
 ````
  

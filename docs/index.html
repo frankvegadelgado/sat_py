@@ -23,8 +23,8 @@ code.language-diff {background-color: while; color: green;}
 </head>
 <body>
 <h1>SAT PY</h1>
-<h2>SAT</h2>
-<p>Instance: A Boolean formula $\phi$ in CNF.</p>
+<h2>3SAT</h2>
+<p>Instance: A Boolean formula $\phi$ in 3CNF.</p>
 <p>Question: Is $\phi$ satisfiable?</p>
 <p><strong>Note: This problem is NP-complete (If any NP-complete can be solved in polynomial time, then $P = NP$)</strong>.</p>
 <ul>
@@ -33,10 +33,10 @@ code.language-diff {background-color: while; color: green;}
 <h1>Theory</h1>
 <ul>
 <li>
-<p>A literal in a Boolean formula is an occurrence of a variable or its negation. A Boolean formula is in conjunctive normal form, or CNF, if it is expressed as an AND of clauses, each of which is the OR of one or more literals.</p>
+<p>A literal in a Boolean formula is an occurrence of a variable or its negation. A Boolean formula is in conjunctive normal form, or CNF, if it is expressed as an AND of clauses, each of which is the OR of one or more literals. A Boolean formula is in 3-conjunctive normal form or 3CNF, if each clause has exactly three distinct literals.</p>
 </li>
 <li>
-<p>A truth assignment for a Boolean formula $\phi$ is a set of values for the variables in $\phi$. A satisfying truth assignment is a truth assignment that causes $\phi$ to be evaluated as true. A Boolean formula with a satisfying truth assignment is satisfiable. The problem SAT asks whether a given Boolean formula $\phi$ in CNF is satisfiable.</p>
+<p>A truth assignment for a Boolean formula $\phi$ is a set of values for the variables in $\phi$. A satisfying truth assignment is a truth assignment that causes $\phi$ to be evaluated as true. A Boolean formula with a satisfying truth assignment is satisfiable. The problem 3SAT asks whether a given Boolean formula $\phi$ in 3CNF is satisfiable.</p>
 </li>
 </ul>
 <h2>Example</h2>
@@ -83,7 +83,7 @@ cd sat-py
 <pre><code>s SATISFIABLE
 v 1 2 3 4 0
 </code></pre>
-<h1><strong>SAT Benchmarks</strong></h1>
+<h1><strong>3SAT Benchmarks</strong></h1>
 <p>We can run the DIMACS files with the extension .cnf in the simplest benchmarks folder:</p>
 <pre><code>&gt;  python solver.py .\bin\simplest\aim-50-1_6-yes1-1.cnf
 s SATISFIABLE
@@ -100,13 +100,13 @@ s UNSATISFIABLE
 <pre><code>aim-50-1_6-yes1-1.cnf
 aim-50-1_6-no-1.cnf
 </code></pre>
-<p>from this well-known dataset <a href="https://www.cs.ubc.ca/~hoos/SATLIB/Benchmarks/SAT/DIMACS/AIM/descr.html">SAT Benchmarks</a>.</p>
+<p>from this well-known dataset <a href="https://www.cs.ubc.ca/~hoos/SATLIB/Benchmarks/SAT/DIMACS/AIM/descr.html">3SAT Benchmarks</a>.</p>
 <h1>Code</h1>
 <ul>
 <li>Python code by <strong>Frank Vega</strong>.</li>
 </ul>
 <h1>Complexity</h1>
-<pre><code class="language-diff">+ We reduce SAT to a Linear System of Constraints in linear time.
+<pre><code class="language-diff">+ We reduce 3SAT to a Linear System of Constraints in linear time.
 + The linear optimization with real variables can be solved in polynomial time.
 </code></pre>
 <h1>License</h1>
