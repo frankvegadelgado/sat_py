@@ -23,25 +23,22 @@ code.language-diff {background-color: while; color: green;}
 </head>
 <body>
 <h1>SAT PY</h1>
-<h2>3SAT</h2>
-<p>Instance: A Boolean formula $\phi$ in 3CNF.</p>
+<h2>SAT</h2>
+<p>Instance: A Boolean formula $\phi$ in CNF.</p>
 <p>Question: Is $\phi$ satisfiable?</p>
 <p><strong>Note: This problem is NP-complete (If any NP-complete can be solved in polynomial time, then $P = NP$)</strong>.</p>
-<ul>
-<li>Note: This algorithm is based on the mathematical background of the following draft: <a href="https://www.researchgate.net/publication/374551182_On_Feasibly_Solving_NP-complete_Problems">On Feasibly Solving NP-complete Problems</a></li>
-</ul>
 <h1>Theory</h1>
 <ul>
 <li>
-<p>A literal in a Boolean formula is an occurrence of a variable or its negation. A Boolean formula is in conjunctive normal form, or CNF, if it is expressed as an AND of clauses, each of which is the OR of one or more literals. A Boolean formula is in 3-conjunctive normal form or 3CNF, if each clause has exactly three distinct literals.</p>
+<p>A literal in a Boolean formula is an occurrence of a variable or its negation. A Boolean formula is in conjunctive normal form, or CNF, if it is expressed as an AND of clauses, each of which is the OR of one or more literals.</p>
 </li>
 <li>
-<p>A truth assignment for a Boolean formula $\phi$ is a set of values for the variables in $\phi$. A satisfying truth assignment is a truth assignment that causes $\phi$ to be evaluated as true. A Boolean formula with a satisfying truth assignment is satisfiable. The problem 3SAT asks whether a given Boolean formula $\phi$ in 3CNF is satisfiable.</p>
+<p>A truth assignment for a Boolean formula $\phi$ is a set of values for the variables in $\phi$. A satisfying truth assignment is a truth assignment that causes $\phi$ to be evaluated as true. A Boolean formula with a satisfying truth assignment is satisfiable. The problem SAT asks whether a given Boolean formula $\phi$ in CNF is satisfiable.</p>
 </li>
 </ul>
 <h2>Example</h2>
 <p>Instance: The Boolean formula $(x_{1} \vee \rightharpoondown x_{3} \vee \rightharpoondown x_{2}) \wedge (x_{3} \vee x_{2} \vee x_{4})$ where $\vee$ (OR), $\wedge$ (AND) and $\rightharpoondown$ (NEGATION) are the logic operations.</p>
-<p>Answer: Satisfiable (the formula is satisfiable since we can assign simultaneously the variables $x_{1}$ and $x_{3}$ as true to obtain a satisfying truth assignment).</p>
+<p>Answer: Satisfiable (the formula is satisfiable when we assign simultaneously the variables $x_{1}$ and $x_{3}$ as true to obtain a satisfying truth assignment).</p>
 <h2>Input of this project</h2>
 <p>The input is on <a href="http://www.satcompetition.org/2009/format-benchmarks2009.html">DIMACS</a> formula with the extension .cnf.</p>
 <p>The <strong>file.cnf</strong> on DIMACS format for $(x_{1} \vee \rightharpoondown x_{3} \vee \rightharpoondown x_{2}) \wedge (x_{3} \vee x_{2} \vee x_{4})$ is</p>
@@ -77,20 +74,61 @@ code.language-diff {background-color: while; color: green;}
 cd sat-py
 </code></pre>
 <p>On sat-py directory run</p>
-<pre><code>python solver.py file.cnf
+<pre><code>python solver.py -i file.cnf
 </code></pre>
 <p>Finally, it would obtain in the console output:</p>
 <pre><code>s SATISFIABLE
-v 1 2 3 4 0
+v 4 2 3 1 0
 </code></pre>
-<h1><strong>3SAT Benchmarks</strong></h1>
+<h1>Command Options</h1>
+<p>On the same input we can run the options</p>
+<pre><code>python solver.py -i file.cnf -v
+</code></pre>
+<p>It would obtain a more verbose in the console output:</p>
+<pre><code>Pre-processing started
+Pre-processing done
+Start building the linear system
+Done building the linear system
+Start solving the linear system
+Done solving the linear system
+s SATISFIABLE
+v 4 2 3 1 0
+</code></pre>
+<p>and the next option</p>
+<pre><code>python solver.py -i file.cnf -v -c
+</code></pre>
+<p>It would check the given solution when the formula is satisfiable:</p>
+<pre><code>Pre-processing started
+Pre-processing done
+Start building the linear system
+Done building the linear system
+Start solving the linear system
+Done solving the linear system
+Checking the solution
+s SATISFIABLE
+v 4 2 3 1 0
+</code></pre>
+<p>and the final option</p>
+<pre><code>python solver.py -i file.cnf -v -t
+</code></pre>
+<p>It would obtain a more verbose in the console output measuring the elapsed time:</p>
+<pre><code>Pre-processing started
+Pre-processing done in: 6.622076034545898 milliseconds
+Start building the linear system
+Done building the linear system in: 15.730142593383789 milliseconds
+Start solving the linear system
+Done solving the linear system in: 15.53964614868164 milliseconds
+s SATISFIABLE
+v 4 2 3 1 0
+</code></pre>
+<h1><strong>SAT Benchmarks</strong></h1>
 <p>We can run the DIMACS files with the extension .cnf in the simplest benchmarks folder:</p>
-<pre><code>&gt;  python solver.py .\bin\simplest\aim-50-1_6-yes1-1.cnf
+<pre><code>&gt;  python solver.py -i .\bin\simplest\aim-50-1_6-yes1-1.cnf
 s SATISFIABLE
 v -1 2 3 -4 -5 -6 7 8 9 -10 -11 -12 -13 14 -15 -16 17 18 19 20 21 22 23 24 -25 26 27 28 -29 30 31 -32 -33 -34 35 36 -37 38 39 40 41 42 43 -44 -45 46 -47 48 -49 -50 0
 </code></pre>
 <p>and</p>
-<pre><code>&gt; python solver.py .\bin\simplest\aim-50-1_6-no-1.cnf
+<pre><code>&gt; python solver.py -i .\bin\simplest\aim-50-1_6-no-1.cnf
 s UNSATISFIABLE
 </code></pre>
 <ul>
@@ -100,14 +138,14 @@ s UNSATISFIABLE
 <pre><code>aim-50-1_6-yes1-1.cnf
 aim-50-1_6-no-1.cnf
 </code></pre>
-<p>from this well-known dataset <a href="https://www.cs.ubc.ca/~hoos/SATLIB/Benchmarks/SAT/DIMACS/AIM/descr.html">3SAT Benchmarks</a>.</p>
+<p>from this well-known dataset <a href="https://www.cs.ubc.ca/~hoos/SATLIB/Benchmarks/SAT/DIMACS/AIM/descr.html">SAT Benchmarks</a>.</p>
 <h1>Code</h1>
 <ul>
 <li>Python code by <strong>Frank Vega</strong>.</li>
 </ul>
 <h1>Complexity</h1>
-<pre><code class="language-diff">+ We reduce 3SAT to a Linear System of Constraints in linear time.
-+ The linear optimization with real variables can be solved in polynomial time.
+<pre><code class="language-diff">+ We reduce SAT to a Linear System of Constraints in homogeneous quadratic time.
++ The quadratic optimization with real variables can be solved in polynomial time.
 </code></pre>
 <h1>License</h1>
 <ul>

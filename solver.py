@@ -1,26 +1,99 @@
-#                          3SAT Solver
+#                          SAT Solver
 #                          Frank Vega
-#                        October 15, 2023
+#                        October 16, 2023
 #        We use Z3 that is a theorem prover from Microsoft Research.
 
 import argparse
 import sys
 import z3
 import time
-import fractions
 z3.set_option(model=True)
-#z3.set_option(precision=10)
-#z3.set_option(rational_to_decimal=True)
 z3.set_param("parallel.enable", False)
 log = False
 timed = False
 started = 0.0
 
+
 def logging(message):
     if log:
         print(message)
+    
+def Fsat_to_3sat(clauses, dummy, total):
+    new_clauses = []
+    added = total
+    
+    for l in clauses:
+        C = list(set(l))
+        if len(C) == 1:
+            new_clauses.append([C[0], dummy, dummy])
+        elif len(C) == 2:
+            new_clauses.append([C[0], C[1], dummy])
+        elif len(C) == 3:
+            new_clauses.append(C)
+        elif len(C) > 3:
+            if len(C) > 0:
+                B = C
+                while True:
+                    A = B[:2]
+                    B = B[2:]
+                    v = added+1
+                    A.append(v)
+                    B.append(-v)
+                    added += 1
+                    new_clauses.append(A)
+                    if len(B) == 3:
+                        break
+                new_clauses.append(B)
+    return (new_clauses, added) 
+    
+def F3sat_to_nae_3sat(clauses, dummy, total):
+    
+    new_clauses = []
+    added = total
+    for clause in clauses:
+        a = added+1
+        added += 1
+        x,y,z = clause[0],clause[1],clause[2]
+        new_clauses.append([x, y, a])
+        new_clauses.append([z, -a, dummy])
+        
+    return (new_clauses, added)        
+        
+        
+def Fnae_3sat_to_monotone_nae_3sat(clauses,total):
+    dict = {}
+    new_clauses = []
+    added = total
 
-def polynomial_time_reduction(clauses, total):
+    for clause in clauses:
+        for v in clause:
+            if v < 0:  
+                if not -v in dict:
+                   added += 1  
+                   dict[-v] = added
+
+    for key in dict:
+        a,b,c = added+1,added+2,added+3
+        added += 3
+        new_clauses.append([key,dict[key],a])
+        new_clauses.append([key,dict[key],b])
+        new_clauses.append([key,dict[key],c])
+        new_clauses.append([a,b,c])
+
+    for clause in clauses:
+        newlist = []
+        for v in clause:
+            if v < 0:
+                newlist.append(dict[-v])
+            else:
+                newlist.append(v)
+        new_clauses.append(newlist)
+
+    return (new_clauses, added)        
+        
+
+        
+def polynomial_time_reduction(clauses, init, total):
     
     logging("Start building the linear system")
     if timed:
@@ -31,18 +104,16 @@ def polynomial_time_reduction(clauses, total):
     x = [ z3.Real('%s' % (i + 1)) for i in range(total) ]
     for i in range(total):
         s.add(x[i] >= 0.0)
+    s.add(x[init] == 0.0)    
     for list in clauses:
-        s.add(x[list[0]-1] + x[list[1]-1] + x[list[2]-1] == 1.0)
-        s.add(x[list[0]-1] + x[list[1]-1] > 2.0/3.0)
-        s.add(x[list[0]-1] + x[list[2]-1] > 2.0/3.0)
-        s.add(x[list[1]-1] + x[list[2]-1] > 2.0/3.0)
+        s.add(x[list[0]-1]*x[list[1]-1] + x[list[1]-1]*x[list[2]-1] + x[list[0]-1]*x[list[2]-1] == x[list[0]-1] + x[list[1]-1] + x[list[2]-1] - 1.0)
     if timed:
         logging(f"Done building the linear system in: {(time.time() - started) * 1000.0} milliseconds")
     else:
         logging("Done building the linear system")
     return s
     
-def solve_linear_system(s):
+def solve_linear_system(s, init):
 
     logging("Start solving the linear system")  
     if timed:
@@ -58,18 +129,22 @@ def solve_linear_system(s):
 
     if result == z3.unsat:
         print("s UNSATISFIABLE")
+        return []
     elif result == z3.unknown:
         print("s UNKNOWN")
+        return []
     else:
         m = s.model()
-        print("s SATISFIABLE")
-        sys.stdout.write("v ")
+        sol = []
         for d in m.decls():
-            if fractions.Fraction('%s' % m[d]) > fractions.Fraction(1, 3): 
-                sys.stdout.write("-%s " % (d.name()))
-            else:
-                sys.stdout.write("%s " % (d.name()))
-        print("0")
+            v = int(d.name())
+            if v <= init:
+                value = ('%s' % m[d])
+                if value == '0': 
+                    sol.append(-v)
+                else:
+                    sol.append(v)
+        return sol
         
 def parse_dimacs(asserts):
     result = []
@@ -89,6 +164,8 @@ if __name__ == "__main__":
     parser.add_argument('-i', '--inputFile', type=str, help='Input file path', required=True)
     parser.add_argument('-v', '--verbose', action='store_true', help='Enable verbose output')
     parser.add_argument('-t', '--timer', action='store_true', help='Enable timer output')
+    parser.add_argument('-c', '--satSolution', action='store_true', help='check the SAT solution')
+    
     args = parser.parse_args()
 
     log = args.verbose
@@ -105,13 +182,37 @@ if __name__ == "__main__":
     asserts = reader.dimacs().splitlines()
     reader.reset()
     total = int(asserts[0].split(' ')[2])
-    clauses = parse_dimacs(asserts[1:])
+    original = parse_dimacs(asserts[1:])
 
+    init = total
+    dummy = total + 1
+    (clauses, total) = Fsat_to_3sat(original, dummy, total + 1)
+    (clauses, total) = F3sat_to_nae_3sat(clauses, dummy, total)
+    (clauses, total) = Fnae_3sat_to_monotone_nae_3sat(clauses, total)
     if timed:
         logging(f"Pre-processing done in: {(time.time() - started) * 1000.0} milliseconds")
     else:
         logging("Pre-processing done")
-    # Polynomial Time Reduction from Monotone ONE-IN-THREE 3SAT to Linear programming
-    reduction = polynomial_time_reduction(clauses, total)
+    # Polynomial Time Reduction from Monotone NAE 3SAT to Linear programming
+    reduction = polynomial_time_reduction(clauses, init, total)
     # Solve Linear programming in Polynomial Time
-    solve_linear_system(reduction)
+    solution = solve_linear_system(reduction, init)
+    if len(solution) > 0:
+        truth = True
+        if args.satSolution:
+            logging("Checking the solution")
+            for list in original:
+                truth = False
+                for z in list:
+                    truth = z in solution
+                    if truth == True:
+                        break
+                if truth == False:
+                    print("s UNSATISFIABLE")
+                    break
+        if truth == True:
+            print("s SATISFIABLE")
+            sys.stdout.write("v ")
+            for w in solution:
+                sys.stdout.write("%s " % w)
+            print("0")
