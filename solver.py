@@ -59,17 +59,21 @@ def polynomial_time_reduction(clauses, init, total):
 
     # Build the linear system  
     s = z3.Solver()
-    x = [ z3.Bool('%s' % (i + 1)) for i in range(total) ]
-    s.add(z3.Not(x[init]))    
+    smt2 = [ ('(declare-fun |%s| () Bool)' % (i + 1)) for i in range(total) ]
+    smt2.append('(assert')
+    smt2.append(' (not |%s|))' % (init+1))
     for list in clauses:
-        a = z3.Not(x[-list[0]-1]) if (list[0] < 0) else x[list[0]-1]
-        b = z3.Not(x[-list[1]-1]) if (list[1] < 0) else x[list[1]-1]
-        c = z3.Not(x[-list[2]-1]) if (list[2] < 0) else x[list[2]-1]
-        s.add(z3.If(z3.Or(a, b), z3.BoolVal(True), c))
+        smt2.append('(assert')
+        v = '(not |%s|)' % (-list[0]) if (list[0] < 0) else '|%s|' % list[0]
+        w = '(not |%s|)' % (-list[1]) if (list[1] < 0) else '|%s|' % list[1]
+        z = '(not |%s|)' % (-list[2]) if (list[2] < 0) else '|%s|' % list[2]
+        smt2.append(' (ite (or %s %s) true %s))' % (v, w, z))
     if timed:
         logging(f"Done building the linear system in: {(time.time() - started) * 1000.0} milliseconds")
     else:
         logging("Done building the linear system")
+    smt2.append('(check-sat)')
+    s.from_string("%s" % '\n'.join(smt2))    
     return s
     
 def solve_linear_system(s, init):

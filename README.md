@@ -18,7 +18,7 @@ Example
 
 Instance: The Boolean formula $(x_{1} \vee \rightharpoondown x_{3} \vee \rightharpoondown x_{2}) \wedge (x_{3} \vee x_{2} \vee x_{4})$ where $\vee$ (OR), $\wedge$ (AND) and $\rightharpoondown$ (NEGATION) are the logic operations.
 
-Answer: Satisfiable (the formula is satisfiable when we assign simultaneously the variables $x_{1}$ and $x_{3}$ as true to obtain a satisfying truth assignment).
+Answer: Satisfiable (the formula is satisfiable when we assign simultaneously the variables $x_{1}$ as false and $x_{3}$ as true to obtain a satisfying truth assignment).
 
 Input of this project
 -----
@@ -76,7 +76,7 @@ Finally, it would obtain in the console output:
 
 ```
 s SATISFIABLE
-v 4 2 3 1 0
+v 3 -1 -2 -4 0
 ```
 
 # Command Options
@@ -97,7 +97,7 @@ Done building the linear system
 Start solving the linear system
 Done solving the linear system
 s SATISFIABLE
-v 4 2 3 1 0
+v 3 -1 -2 -4 0
 ```
 
 and the next option 
@@ -117,7 +117,7 @@ Start solving the linear system
 Done solving the linear system
 Checking the solution
 s SATISFIABLE
-v 4 2 3 1 0
+v 3 -1 -2 -4 0
 ```
 
 and the final option
@@ -136,7 +136,7 @@ Done building the linear system in: 15.730142593383789 milliseconds
 Start solving the linear system
 Done solving the linear system in: 15.53964614868164 milliseconds
 s SATISFIABLE
-v 4 2 3 1 0
+v 3 -1 -2 -4 0
 ```
 
 
@@ -147,7 +147,7 @@ We can run the DIMACS files with the extension .cnf in the simplest benchmarks f
 ```
 >  python solver.py -i .\bin\simplest\aim-50-1_6-yes1-1.cnf
 s SATISFIABLE
-v -1 2 3 -4 -5 -6 7 8 9 -10 -11 -12 -13 14 -15 -16 17 18 19 20 21 22 23 24 -25 26 27 28 -29 30 31 -32 -33 -34 35 36 -37 38 39 40 41 42 43 -44 -45 46 -47 48 -49 -50 0
+v 46 30 -13 17 36 -15 7 -47 41 -37 -6 -33 -34 8 -12 -49 3 38 -29 9 -11 -1 19 24 -45 31 -32 -10 21 39 23 35 -5 -50 40 -44 26 42 2 -16 28 43 14 27 22 -25 48 -4 18 20 0
 ```
 
 and
