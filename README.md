@@ -175,8 +175,8 @@ from this well-known dataset [SAT Benchmarks](https://www.cs.ubc.ca/~hoos/SATLIB
 # Complexity
 
 ````diff
-+ We reduce SAT to a Linear System of Constraints in homogeneous quadratic time.
-+ The quadratic optimization with real variables can be solved in polynomial time.
++ We reduce SAT to 2SAT Conditional.
++ The problem 2SAT Conditional can be solved in polynomial time.
 ````
  
 # License

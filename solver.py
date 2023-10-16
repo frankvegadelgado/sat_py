@@ -18,10 +18,12 @@ def logging(message):
     if log:
         print(message)
     
-def Fsat_to_3sat(clauses, dummy, total):
+def Fsat_to_3sat(clauses, total):
     new_clauses = []
     added = total
-    
+    dummy = added + 1
+    added += 1
+                    
     for l in clauses:
         C = list(set(l))
         if len(C) == 1:
@@ -46,50 +48,6 @@ def Fsat_to_3sat(clauses, dummy, total):
                 new_clauses.append(B)
     return (new_clauses, added) 
     
-def F3sat_to_nae_3sat(clauses, dummy, total):
-    
-    new_clauses = []
-    added = total
-    for clause in clauses:
-        a = added+1
-        added += 1
-        x,y,z = clause[0],clause[1],clause[2]
-        new_clauses.append([x, y, a])
-        new_clauses.append([z, -a, dummy])
-        
-    return (new_clauses, added)        
-        
-        
-def Fnae_3sat_to_monotone_nae_3sat(clauses,total):
-    dict = {}
-    new_clauses = []
-    added = total
-
-    for clause in clauses:
-        for v in clause:
-            if v < 0:  
-                if not -v in dict:
-                   added += 1  
-                   dict[-v] = added
-
-    for key in dict:
-        a,b,c = added+1,added+2,added+3
-        added += 3
-        new_clauses.append([key,dict[key],a])
-        new_clauses.append([key,dict[key],b])
-        new_clauses.append([key,dict[key],c])
-        new_clauses.append([a,b,c])
-
-    for clause in clauses:
-        newlist = []
-        for v in clause:
-            if v < 0:
-                newlist.append(dict[-v])
-            else:
-                newlist.append(v)
-        new_clauses.append(newlist)
-
-    return (new_clauses, added)        
         
 
         
@@ -101,12 +59,13 @@ def polynomial_time_reduction(clauses, init, total):
 
     # Build the linear system  
     s = z3.Solver()
-    x = [ z3.Real('%s' % (i + 1)) for i in range(total) ]
-    for i in range(total):
-        s.add(x[i] >= 0.0)
-    s.add(x[init] == 0.0)    
+    x = [ z3.Bool('%s' % (i + 1)) for i in range(total) ]
+    s.add(z3.Not(x[init]))    
     for list in clauses:
-        s.add(x[list[0]-1]*x[list[1]-1] + x[list[1]-1]*x[list[2]-1] + x[list[0]-1]*x[list[2]-1] == x[list[0]-1] + x[list[1]-1] + x[list[2]-1] - 1.0)
+        a = z3.Not(x[-list[0]-1]) if (list[0] < 0) else x[list[0]-1]
+        b = z3.Not(x[-list[1]-1]) if (list[1] < 0) else x[list[1]-1]
+        c = z3.Not(x[-list[2]-1]) if (list[2] < 0) else x[list[2]-1]
+        s.add(z3.If(z3.Or(a, b), z3.BoolVal(True), c))
     if timed:
         logging(f"Done building the linear system in: {(time.time() - started) * 1000.0} milliseconds")
     else:
@@ -140,7 +99,7 @@ def solve_linear_system(s, init):
             v = int(d.name())
             if v <= init:
                 value = ('%s' % m[d])
-                if value == '0': 
+                if value == 'False': 
                     sol.append(-v)
                 else:
                     sol.append(v)
@@ -185,17 +144,14 @@ if __name__ == "__main__":
     original = parse_dimacs(asserts[1:])
 
     init = total
-    dummy = total + 1
-    (clauses, total) = Fsat_to_3sat(original, dummy, total + 1)
-    (clauses, total) = F3sat_to_nae_3sat(clauses, dummy, total)
-    (clauses, total) = Fnae_3sat_to_monotone_nae_3sat(clauses, total)
+    (clauses, total) = Fsat_to_3sat(original, total)
     if timed:
         logging(f"Pre-processing done in: {(time.time() - started) * 1000.0} milliseconds")
     else:
         logging("Pre-processing done")
-    # Polynomial Time Reduction from Monotone NAE 3SAT to Linear programming
+    # Polynomial Time Reduction from 3SAT to 2SAT Conditional
     reduction = polynomial_time_reduction(clauses, init, total)
-    # Solve Linear programming in Polynomial Time
+    # Solve 2SAT Conditional
     solution = solve_linear_system(reduction, init)
     if len(solution) > 0:
         truth = True
