@@ -76,7 +76,7 @@ Finally, it would obtain in the console output:
 
 ```
 s SATISFIABLE
-v 3 -1 -2 -4 0
+v -2 3 -1 -4 0
 ```
 
 # Command Options
@@ -97,27 +97,7 @@ Done building the conditional formula
 Start solving the conditional formula
 Done solving the conditional formula
 s SATISFIABLE
-v 3 -1 -2 -4 0
-```
-
-and the next option 
-
-```
-python solver.py -i file.cnf -v -c
-```
-
-It would check the given solution when the formula is satisfiable:
-
-```
-Pre-processing started
-Pre-processing done
-Start building the conditional formula
-Done building the conditional formula
-Start solving the conditional formula
-Done solving the conditional formula
-Checking the solution
-s SATISFIABLE
-v 3 -1 -2 -4 0
+v -2 3 -1 -4 0
 ```
 
 and the final option
@@ -136,7 +116,7 @@ Done building the conditional formula in: 15.730142593383789 milliseconds
 Start solving the conditional formula
 Done solving the conditional formula in: 15.53964614868164 milliseconds
 s SATISFIABLE
-v 3 -1 -2 -4 0
+v -2 3 -1 -4 0
 ```
 
 

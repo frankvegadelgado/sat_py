@@ -9,6 +9,10 @@ import z3
 import time
 z3.set_option(model=True)
 z3.set_param("parallel.enable", False)
+k = 0
+dummy = 0
+mapped = {}
+
 log = False
 timed = False
 started = 0.0
@@ -18,55 +22,51 @@ def logging(message):
     if log:
         print(message)
     
-def Fsat_to_3sat(clauses, total):
-    new_clauses = []
-    added = total
-    dummy = added + 1
-    added += 1
-                    
+def Fsat_to_3sat(clauses):
+    global mapped, k, dummy
+    s = dummy + 1
+    reduced = []
     for l in clauses:
         C = list(set(l))
         if len(C) == 1:
-            new_clauses.append([C[0], dummy, dummy])
+            reduced.append([C[0], dummy, dummy])
         elif len(C) == 2:
-            new_clauses.append([C[0], C[1], dummy])
+            reduced.append([C[0], C[1], dummy])
         elif len(C) == 3:
-            new_clauses.append(C)
+            reduced.append(C)
         elif len(C) > 3:
             if len(C) > 0:
                 B = C
                 while True:
                     A = B[:2]
                     B = B[2:]
-                    v = added+1
-                    A.append(v)
-                    B.append(-v)
-                    added += 1
-                    new_clauses.append(A)
+                    A.append(s)
+                    B.append(-s)
+                    mapped[s] = k
+                    k += 1
+                    s += 1
+                    reduced.append(A)
                     if len(B) == 3:
                         break
-                new_clauses.append(B)
-    return (new_clauses, added) 
-    
+                reduced.append(B)
+    return reduced 
         
-
-        
-def polynomial_time_reduction(clauses, init, total):
-    
+def polynomial_time_reduction(clauses):
+    global mapped, dummy
     logging("Start building the conditional formula")
     if timed:
         started = time.time()
 
     # Build the conditional formula  
     s = z3.Solver()
-    smt2 = [ ('(declare-fun |%s| () Bool)' % (i + 1)) for i in range(total) ]
+    smt2 = [ ('(declare-fun |%s| () Bool)' % i) for i in range(len(mapped)) ]
     smt2.append('(assert')
-    smt2.append(' (not |%s|))' % (init+1))
+    smt2.append(' (not |%s|))' % (mapped[dummy]))
     for list in clauses:
         smt2.append('(assert')
-        v = '(not |%s|)' % (-list[0]) if (list[0] < 0) else '|%s|' % list[0]
-        w = '(not |%s|)' % (-list[1]) if (list[1] < 0) else '|%s|' % list[1]
-        z = '(not |%s|)' % (-list[2]) if (list[2] < 0) else '|%s|' % list[2]
+        v = '(not |%s|)' % (mapped[-list[0]]) if (list[0] < 0) else '|%s|' % mapped[list[0]]
+        w = '(not |%s|)' % (mapped[-list[1]]) if (list[1] < 0) else '|%s|' % mapped[list[1]]
+        z = '(not |%s|)' % (mapped[-list[2]]) if (list[2] < 0) else '|%s|' % mapped[list[2]]
         smt2.append(' (ite (or %s %s) true %s))' % (v, w, z))
     if timed:
         logging(f"Done building the conditional formula in: {(time.time() - started) * 1000.0} milliseconds")
@@ -76,8 +76,8 @@ def polynomial_time_reduction(clauses, init, total):
     s.from_string("%s" % '\n'.join(smt2))    
     return s
     
-def solve_conditional_formula(s, init):
-
+def solve_conditional_formula(s):
+    global mapped, dummy
     logging("Start solving the conditional formula")  
     if timed:
         started = time.time()
@@ -92,33 +92,43 @@ def solve_conditional_formula(s, init):
 
     if result == z3.unsat:
         print("s UNSATISFIABLE")
-        return []
     elif result == z3.unknown:
         print("s UNKNOWN")
-        return []
     else:
         m = s.model()
-        sol = []
+        print("s SATISFIABLE")
+        sys.stdout.write("v ")
+        inv_mapped = {}
+        for key in mapped:
+            inv_mapped[mapped[key]] = key
         for d in m.decls():
             v = int(d.name())
-            if v <= init:
+            if inv_mapped[v] < dummy:
                 value = ('%s' % m[d])
                 if value == 'False': 
-                    sol.append(-v)
+                    sys.stdout.write("-%s " % (inv_mapped[v]))
                 else:
-                    sol.append(v)
-        return sol
+                    sys.stdout.write("%s " % (inv_mapped[v]))
+        print("0")
         
 def parse_dimacs(asserts):
+    global mapped, k, dummy
     result = []
     for strvar in asserts:
-        expr = strvar.split(" ")
-        expr = expr[:-1]
-        l = []
-        for t in expr:
-            v = int(t)
-            l.append(v)
-        result.append(l)        
+        line = strvar.strip()
+        if not line.startswith('p') or not line.startswith('c'):
+            expr = line.split(" ")
+            expr = expr[:-1]
+            l = []
+            for t in expr:
+                v = int(t)
+                l.append(v)
+                value = abs(v)
+                if value not in mapped:
+                    mapped[value] = k
+                    k += 1
+                    dummy = value if (dummy < value) else dummy
+            result.append(l)        
     return result   
                        
 if __name__ == "__main__":
@@ -127,7 +137,6 @@ if __name__ == "__main__":
     parser.add_argument('-i', '--inputFile', type=str, help='Input file path', required=True)
     parser.add_argument('-v', '--verbose', action='store_true', help='Enable verbose output')
     parser.add_argument('-t', '--timer', action='store_true', help='Enable timer output')
-    parser.add_argument('-c', '--satSolution', action='store_true', help='check the SAT solution')
     
     args = parser.parse_args()
 
@@ -139,40 +148,19 @@ if __name__ == "__main__":
     if timed:
         started = time.time()
 
-    reader = z3.Solver()
-    reader.from_file(args.inputFile)
+    file = open(args.inputFile, 'r')
     #Format from dimacs
-    asserts = reader.dimacs().splitlines()
-    reader.reset()
-    total = int(asserts[0].split(' ')[2])
+    asserts = file.readlines()    
     original = parse_dimacs(asserts[1:])
-
-    init = total
-    (clauses, total) = Fsat_to_3sat(original, total)
+    dummy += 1
+    mapped[dummy] = k
+    k += 1
+    clauses = Fsat_to_3sat(original)
     if timed:
         logging(f"Pre-processing done in: {(time.time() - started) * 1000.0} milliseconds")
     else:
         logging("Pre-processing done")
     # Polynomial Time Reduction from 3SAT to 2SAT Conditional
-    reduction = polynomial_time_reduction(clauses, init, total)
+    reduction = polynomial_time_reduction(clauses)
     # Solve 2SAT Conditional in Polynomial Time
-    solution = solve_conditional_formula(reduction, init)
-    if len(solution) > 0:
-        truth = True
-        if args.satSolution:
-            logging("Checking the solution")
-            for list in original:
-                truth = False
-                for z in list:
-                    truth = z in solution
-                    if truth == True:
-                        break
-                if truth == False:
-                    print("s UNSATISFIABLE")
-                    break
-        if truth == True:
-            print("s SATISFIABLE")
-            sys.stdout.write("v ")
-            for w in solution:
-                sys.stdout.write("%s " % w)
-            print("0")
+    solution = solve_conditional_formula(reduction)

@@ -78,7 +78,7 @@ cd sat-py
 </code></pre>
 <p>Finally, it would obtain in the console output:</p>
 <pre><code>s SATISFIABLE
-v 3 -1 -2 -4 0
+v -2 3 -1 -4 0
 </code></pre>
 <h1>Command Options</h1>
 <p>On the same input we can run the options</p>
@@ -92,21 +92,7 @@ Done building the conditional formula
 Start solving the conditional formula
 Done solving the conditional formula
 s SATISFIABLE
-v 3 -1 -2 -4 0
-</code></pre>
-<p>and the next option</p>
-<pre><code>python solver.py -i file.cnf -v -c
-</code></pre>
-<p>It would check the given solution when the formula is satisfiable:</p>
-<pre><code>Pre-processing started
-Pre-processing done
-Start building the conditional formula
-Done building the conditional formula
-Start solving the conditional formula
-Done solving the conditional formula
-Checking the solution
-s SATISFIABLE
-v 3 -1 -2 -4 0
+v -2 3 -1 -4 0
 </code></pre>
 <p>and the final option</p>
 <pre><code>python solver.py -i file.cnf -v -t
@@ -119,7 +105,7 @@ Done building the conditional formula in: 15.730142593383789 milliseconds
 Start solving the conditional formula
 Done solving the conditional formula in: 15.53964614868164 milliseconds
 s SATISFIABLE
-v 3 -1 -2 -4 0
+v -2 3 -1 -4 0
 </code></pre>
 <h1><strong>SAT Benchmarks</strong></h1>
 <p>We can run the DIMACS files with the extension .cnf in the simplest benchmarks folder:</p>
