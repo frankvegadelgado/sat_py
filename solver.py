@@ -116,7 +116,7 @@ def parse_dimacs(asserts):
     result = []
     for strvar in asserts:
         line = strvar.strip()
-        if not line.startswith('p') or not line.startswith('c'):
+        if not line.startswith('p') and not line.startswith('c'):
             expr = line.split(" ")
             expr = expr[:-1]
             l = []
