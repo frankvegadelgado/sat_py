@@ -92,10 +92,10 @@ It would obtain a more verbose in the console output:
 ```
 Pre-processing started
 Pre-processing done
-Start building the linear system
-Done building the linear system
-Start solving the linear system
-Done solving the linear system
+Start building the conditional formula
+Done building the conditional formula
+Start solving the conditional formula
+Done solving the conditional formula
 s SATISFIABLE
 v 3 -1 -2 -4 0
 ```
@@ -111,10 +111,10 @@ It would check the given solution when the formula is satisfiable:
 ```
 Pre-processing started
 Pre-processing done
-Start building the linear system
-Done building the linear system
-Start solving the linear system
-Done solving the linear system
+Start building the conditional formula
+Done building the conditional formula
+Start solving the conditional formula
+Done solving the conditional formula
 Checking the solution
 s SATISFIABLE
 v 3 -1 -2 -4 0
@@ -131,10 +131,10 @@ It would obtain a more verbose in the console output measuring the elapsed time:
 ```
 Pre-processing started
 Pre-processing done in: 6.622076034545898 milliseconds
-Start building the linear system
-Done building the linear system in: 15.730142593383789 milliseconds
-Start solving the linear system
-Done solving the linear system in: 15.53964614868164 milliseconds
+Start building the conditional formula
+Done building the conditional formula in: 15.730142593383789 milliseconds
+Start solving the conditional formula
+Done solving the conditional formula in: 15.53964614868164 milliseconds
 s SATISFIABLE
 v 3 -1 -2 -4 0
 ```

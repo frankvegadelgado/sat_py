@@ -1,6 +1,6 @@
 #                          SAT Solver
 #                          Frank Vega
-#                        October 16, 2023
+#                        October 17, 2023
 #        We use Z3 that is a theorem prover from Microsoft Research.
 
 import argparse
@@ -53,11 +53,11 @@ def Fsat_to_3sat(clauses, total):
         
 def polynomial_time_reduction(clauses, init, total):
     
-    logging("Start building the linear system")
+    logging("Start building the conditional formula")
     if timed:
         started = time.time()
 
-    # Build the linear system  
+    # Build the conditional formula  
     s = z3.Solver()
     smt2 = [ ('(declare-fun |%s| () Bool)' % (i + 1)) for i in range(total) ]
     smt2.append('(assert')
@@ -69,26 +69,26 @@ def polynomial_time_reduction(clauses, init, total):
         z = '(not |%s|)' % (-list[2]) if (list[2] < 0) else '|%s|' % list[2]
         smt2.append(' (ite (or %s %s) true %s))' % (v, w, z))
     if timed:
-        logging(f"Done building the linear system in: {(time.time() - started) * 1000.0} milliseconds")
+        logging(f"Done building the conditional formula in: {(time.time() - started) * 1000.0} milliseconds")
     else:
-        logging("Done building the linear system")
+        logging("Done building the conditional formula")
     smt2.append('(check-sat)')
     s.from_string("%s" % '\n'.join(smt2))    
     return s
     
-def solve_linear_system(s, init):
+def solve_conditional_formula(s, init):
 
-    logging("Start solving the linear system")  
+    logging("Start solving the conditional formula")  
     if timed:
         started = time.time()
     
-    #Solve the linear system
+    #Solve the conditional formula
     result = s.check()
 
     if timed:
-        logging(f"Done solving the linear system in: {(time.time() - started) * 1000.0} milliseconds")
+        logging(f"Done solving the conditional formula in: {(time.time() - started) * 1000.0} milliseconds")
     else:
-        logging("Done solving the linear system")
+        logging("Done solving the conditional formula")
 
     if result == z3.unsat:
         print("s UNSATISFIABLE")
@@ -155,8 +155,8 @@ if __name__ == "__main__":
         logging("Pre-processing done")
     # Polynomial Time Reduction from 3SAT to 2SAT Conditional
     reduction = polynomial_time_reduction(clauses, init, total)
-    # Solve 2SAT Conditional
-    solution = solve_linear_system(reduction, init)
+    # Solve 2SAT Conditional in Polynomial Time
+    solution = solve_conditional_formula(reduction, init)
     if len(solution) > 0:
         truth = True
         if args.satSolution:
